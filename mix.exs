@@ -7,11 +7,14 @@ defmodule Loner.MixProject do
       version: "0.1.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: [
+        test: "test --no-start" # Required for LocalCluster
+      ]
     ]
+
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger],
@@ -19,11 +22,12 @@ defmodule Loner.MixProject do
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:horde, "~> 0.7"},
-      {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.4", only: :dev, runtime: false},
+      {:local_cluster, "~> 1.0.4", only: :test, runtime: false},
+      {:schism, "~> 1.0.1", only: :test, runtime: false}
     ]
   end
 end
