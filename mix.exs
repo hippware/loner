@@ -9,10 +9,10 @@ defmodule Loner.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: [
-        test: "test --no-start" # Required for LocalCluster
+        # Required for LocalCluster
+        test: "test --no-start"
       ]
     ]
-
   end
 
   def application do
@@ -26,6 +26,7 @@ defmodule Loner.MixProject do
     [
       {:horde, "~> 0.7"},
       {:dialyxir, "~> 1.0.0-rc.4", only: :dev, runtime: false},
+      {:eventually, "~> 1.0", only: :test, runtime: false},
       {:local_cluster, "~> 1.0.4", only: :test, runtime: false},
       {:schism, "~> 1.0.1", only: :test, runtime: false}
     ]
