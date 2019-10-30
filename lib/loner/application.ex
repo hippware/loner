@@ -7,7 +7,7 @@ defmodule Loner.Application do
         {Loner.NodeMonitor, []}
       ],
       strategy: :one_for_one,
-      name: DawdleDB.Supervisor
+      name: Loner.Supervisor
     )
   end
 end

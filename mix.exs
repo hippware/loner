@@ -25,10 +25,16 @@ defmodule Loner.MixProject do
   defp deps do
     [
       {:horde, "~> 0.7"},
-      {:dialyxir, "~> 1.0.0-rc.4", only: :dev, runtime: false},
-      {:eventually, "~> 1.0", only: :test, runtime: false},
-      {:local_cluster, "~> 1.0.4", only: :test, runtime: false},
-      {:schism, "~> 1.0.1", only: :test, runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.7", only: :dev, runtime: false},
+      {:eventually, "~> 1.1", only: :test, runtime: false},
+      # TODO: Back to upstream once logger config fix is merged
+      # (https://github.com/whitfin/local-cluster/pull/12)
+      # {:local_cluster, "~> 1.0.4", only: :test, runtime: false},
+      {:local_cluster,
+       github: "hippware/local-cluster",
+       branch: "fix-remote-log-level",
+       only: :test,
+       runtime: false}
     ]
   end
 end

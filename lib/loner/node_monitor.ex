@@ -18,6 +18,11 @@ defmodule Loner.NodeMonitor do
     {:noreply, s}
   end
 
+  def handle_info({:nodedown, _node}, s) do
+    update_nodes()
+    {:noreply, s}
+  end
+
   def handle_info(_, s) do
     {:noreply, s}
   end
