@@ -1,4 +1,9 @@
 defmodule Loner.NodeMonitor do
+  @moduledoc """
+  GenServer responsible for monitoring node additions/deletions and triggering
+  updates to the Horde node list to ensure it stays current
+  """
+
   use GenServer
 
   alias Horde.Cluster
@@ -27,7 +32,7 @@ defmodule Loner.NodeMonitor do
     {:noreply, s}
   end
 
-  defp update_nodes() do
+  defp update_nodes do
     nodes = Node.list([:visible, :this])
 
     registries = for n <- nodes, do: {Loner.Registry, n}

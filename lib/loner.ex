@@ -4,29 +4,28 @@ defmodule Loner do
   using Horde.
   """
 
-  alias Horde.DynamicSupervisor
-  alias Horde.Registry
-
-  @type child_spec() :: module() | module() | [term()]
+  @type child_spec() :: module() | {module(), term()} | module()
 
   @registry Loner.Registry
   @supervisor Loner.DynamicSupervisor
 
-  def name(name), do: {:via, Registry, {@registry, name}}
+  def name(name), do: {:via, Horde.Registry, {@registry, name}}
 
   def start(module, name) do
-    DynamicSupervisor.start_child(@supervisor, {module, name})
+    Horde.DynamicSupervisor.start_child(@supervisor, {module, name: name(name)})
   end
 
   def stop(name) do
-    DynamicSupervisor.which_children(@supervisor) |> IO.inspect()
+    Horde.DynamicSupervisor.which_children(@supervisor)
 
-    case Registry.whereis(name) do
-      [] ->
+    case whereis_name(name) do
+      :undefined ->
         :ok
 
-      [{pid, _}] ->
-        DynamicSupervisor.terminate_child(@supervisor, pid)
+      pid when is_pid(pid) ->
+        Horde.DynamicSupervisor.terminate_child(@supervisor, pid)
     end
   end
+
+  def whereis_name(name), do: Horde.Registry.whereis_name({@registry, name})
 end

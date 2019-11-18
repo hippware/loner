@@ -1,18 +1,20 @@
 defmodule TestServer do
-  use GenServer, restart: :permanent
+  @moduledoc """
+  Very simple test server - defined here rather than under `test/` so that it
+  gets loaded to remote nodes by LocalCluster
+  """
 
-  def start_link(name) do
-    GenServer.start_link(__MODULE__, [], name: name) do
+  use GenServer
+
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, [], args)
   end
 
   def init(_) do
     {:ok, nil}
   end
-end
 
-defmodule DistStrat do
-  @behaviour Horde.DistributionStrategy
+  def is_test?(pid), do: GenServer.call(pid, :is_test?)
 
-  def choose_node(_id, members), do: {:ok, List.last(members)}
-  def has_quorum?(_members), do: true
+  def handle_call(:is_test?, _from, state), do: {:reply, true, state}
 end

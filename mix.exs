@@ -25,6 +25,8 @@ defmodule Loner.MixProject do
   defp deps do
     [
       {:horde, "~> 0.7"},
+      {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
+      {:credo_naming, "~> 0.3", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.7", only: :dev, runtime: false},
       {:eventually, "~> 1.1", only: :test, runtime: false},
       # TODO: Back to upstream once logger config fix is merged

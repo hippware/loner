@@ -1,10 +1,13 @@
 defmodule Loner.Application do
+  @moduledoc "Top level application module for Loner"
+
   def start(_, _) do
     Supervisor.start_link(
       [
         {Horde.Registry, [name: Loner.Registry, keys: :unique]},
-        {Horde.DynamicSupervisor, [name: Loner.DynamicSupervisor, strategy: :one_for_one]},
-        {Loner.NodeMonitor, []}
+        {Horde.DynamicSupervisor,
+         [name: Loner.DynamicSupervisor, strategy: :one_for_one]},
+        Loner.NodeMonitor
       ],
       strategy: :one_for_one,
       name: Loner.Supervisor
