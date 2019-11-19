@@ -1,7 +1,7 @@
 defmodule Loner.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.2.0"
 
   def project do
     [
@@ -53,10 +53,10 @@ defmodule Loner.MixProject do
       # (https://github.com/whitfin/local-cluster/pull/12)
       # {:local_cluster, "~> 1.0.4", only: :test, runtime: false},
       {:local_cluster,
-        github: "hippware/local-cluster",
-        branch: "fix-remote-log-level",
-        only: :test,
-        runtime: false}
+       github: "hippware/local-cluster",
+       branch: "fix-remote-log-level",
+       only: :test,
+       runtime: false}
     ]
   end
 
@@ -86,7 +86,7 @@ defmodule Loner.MixProject do
     [
       source_ref: "v#\{@version\}",
       main: "readme",
-      extras: ["README.md"],
+      extras: ["README.md"]
     ]
   end
 end

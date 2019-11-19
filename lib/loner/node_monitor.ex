@@ -36,9 +36,9 @@ defmodule Loner.NodeMonitor do
     nodes = Node.list([:visible, :this])
 
     registries = for n <- nodes, do: {Loner.Registry, n}
-    Cluster.set_members(Loner.Registry, registries)
+    :ok = Cluster.set_members(Loner.Registry, registries)
 
     supervisors = for n <- nodes, do: {Loner.DynamicSupervisor, n}
-    Cluster.set_members(Loner.DynamicSupervisor, supervisors)
+    :ok = Cluster.set_members(Loner.DynamicSupervisor, supervisors)
   end
 end

@@ -30,26 +30,26 @@ defmodule LonerTest do
              for(n <- ctx.all_nodes, do: {Loner.Registry, n}) |> Enum.sort()
   end
 
-  test "Singleton should start up and be findable" do
-    assert {:ok, pid} = Loner.start(TestServer, Singleton)
+  test "TestServer should start up and be findable" do
+    assert {:ok, pid} = Loner.start(TestServer)
 
-    assert_eventually(Loner.whereis_name(Singleton) == pid)
+    assert_eventually(Loner.whereis_name(TestServer) == pid)
     assert TestServer.is_test?(pid)
-    assert TestServer.is_test?(Loner.name(Singleton))
+    assert TestServer.is_test?(Loner.name(TestServer))
   end
 
-  test "Singleton should be findable from all nodes", ctx do
-    assert {:ok, pid} = Loner.start(TestServer, Singleton)
+  test "TestServer should be findable from all nodes", ctx do
+    assert {:ok, pid} = Loner.start(TestServer)
 
     for n <- ctx.all_nodes do
       assert_eventually(
-        :rpc.call(n, TestServer, :is_test?, [Loner.name(Singleton)]) == true
+        :rpc.call(n, TestServer, :is_test?, [Loner.name(TestServer)]) == true
       )
     end
   end
 
-  test "Singleton should be restarted on abnormal exit", ctx do
-    assert {:ok, pid} = Loner.start(TestServer, Singleton)
+  test "TestServer should be restarted on abnormal exit", ctx do
+    assert {:ok, pid} = Loner.start(TestServer)
 
     assert_eventually(
       DynamicSupervisor.which_children(Loner.DynamicSupervisor) != []
@@ -57,36 +57,36 @@ defmodule LonerTest do
 
     Process.exit(pid, :kill)
 
-    assert_eventually(is_pid(Loner.whereis_name(Singleton)))
-    pid2 = Loner.whereis_name(Singleton)
+    assert_eventually(is_pid(Loner.whereis_name(TestServer)))
+    pid2 = Loner.whereis_name(TestServer)
 
     assert is_pid(pid2)
-    assert TestServer.is_test?(Loner.name(Singleton))
+    assert TestServer.is_test?(Loner.name(TestServer))
     assert pid != pid2
 
     for n <- ctx.nodes do
       assert_eventually(
-        :rpc.call(n, TestServer, :is_test?, [Loner.name(Singleton)]) == true
+        :rpc.call(n, TestServer, :is_test?, [Loner.name(TestServer)]) == true
       )
     end
   end
 
   test "adding an extra node should make the singleton avaialble to it" do
-    assert {:ok, pid} = Loner.start(TestServer, Singleton)
+    assert {:ok, pid} = Loner.start(TestServer)
 
     [n] = LocalCluster.start_nodes("loner-cluster2", 1)
 
     assert_eventually(
-      :rpc.call(n, TestServer, :is_test?, [Loner.name(Singleton)]) == true
+      :rpc.call(n, TestServer, :is_test?, [Loner.name(TestServer)]) == true
     )
   end
 
   test """
   removing the node running the singleton should cause it to restart elsewhere
   """ do
-    {:ok, pid!} = Loner.start(TestServer, Singleton)
+    {:ok, pid!} = Loner.start(TestServer)
     pid! = restart_until_remote(pid!)
-    assert_eventually(Loner.whereis_name(Singleton) == pid!)
+    assert_eventually(Loner.whereis_name(TestServer) == pid!)
 
     # Let the cluster sync up
     Process.sleep(500)
@@ -100,20 +100,49 @@ defmodule LonerTest do
     )
 
     # and be registered
-    assert_eventually(is_pid(Loner.whereis_name(Singleton)))
-    pid2 = Loner.whereis_name(Singleton)
+    assert_eventually(is_pid(Loner.whereis_name(TestServer)))
+    pid2 = Loner.whereis_name(TestServer)
 
     # and be the right process
     assert TestServer.is_test?(pid2)
-    assert TestServer.is_test?(Loner.name(Singleton))
+    assert TestServer.is_test?(Loner.name(TestServer))
     assert pid! != pid2
+  end
+
+  test "stop/1 with a pid should stop the singleton" do
+    {:ok, pid} = Loner.start(TestServer)
+    assert :ok == Loner.stop(pid)
+    refute Process.alive?(pid)
+
+    assert_eventually(
+      DynamicSupervisor.which_children(Loner.DynamicSupervisor) == []
+    )
+
+    assert_eventually(Loner.whereis_name(TestServer) == :undefined)
+  end
+
+  test "stop/1 with a name should stop the singleton" do
+    {:ok, pid} = Loner.start(TestServer)
+    assert :ok == Loner.stop(TestServer)
+    refute Process.alive?(pid)
+
+    assert_eventually(
+      DynamicSupervisor.which_children(Loner.DynamicSupervisor) == []
+    )
+
+    assert_eventually(Loner.whereis_name(TestServer) == :undefined)
+  end
+
+  test "stop/1 with an invalid name should return :ok" do
+    assert :ok == Loner.stop(Fnord)
   end
 
   defp restart_until_remote(pid) do
     if :erlang.node(pid) == node() do
       Process.exit(pid, :kill)
-      assert_eventually([] != Horde.Registry.whereis(Loner.name(Singleton)))
-      [{new_pid, _}] = Horde.Registry.whereis(Loner.name(Singleton))
+      assert_eventually(pid != Loner.whereis_name(TestServer))
+      assert_eventually(:undefined != Loner.whereis_name(TestServer))
+      new_pid = Loner.whereis_name(TestServer)
       restart_until_remote(new_pid)
     else
       pid
