@@ -8,8 +8,8 @@ defmodule Loner.NodeMonitor do
 
   alias Horde.Cluster
 
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, [], name: __MODULE__)
+  def start_link(init_arg) do
+    GenServer.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
   def init(_) do

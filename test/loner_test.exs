@@ -118,7 +118,7 @@ defmodule LonerTest do
       DynamicSupervisor.which_children(Loner.DynamicSupervisor) == []
     )
 
-    assert_eventually(Loner.whereis_name(TestServer) == :undefined)
+    assert_eventually(Loner.whereis_name(TestServer) == nil)
   end
 
   test "stop/1 with a name should stop the singleton" do
@@ -130,22 +130,63 @@ defmodule LonerTest do
       DynamicSupervisor.which_children(Loner.DynamicSupervisor) == []
     )
 
-    assert_eventually(Loner.whereis_name(TestServer) == :undefined)
+    assert_eventually(Loner.whereis_name(TestServer) == nil)
   end
 
   test "stop/1 with an invalid name should return :ok" do
     assert :ok == Loner.stop(Fnord)
   end
 
+  describe "Supervised supervisor" do
+    test "Should only start up one instance of the supervised server", ctx do
+      :rpc.multicall(ctx.all_nodes, Loner, :start, [TestSupervisor])
+
+      assert_eventually(is_pid(Loner.whereis_name(TestSupervisor)))
+
+      assert_eventually [_pid] = find_registered_servers(ctx.all_nodes)
+    end
+
+    test "Should tidy up multiple server once a netsplit is healed", ctx do
+      [n1, n2, n3, n4, n5] = ctx.all_nodes
+      g1 = [n1, n2, n3]
+      g2 = [n4, n5]
+      Schism.partition([n4, n5])
+      :rpc.multicall(ctx.all_nodes, Loner, :start, [TestSupervisor])
+
+      IO.inspect "HERE1"
+      # There should be one instance on each
+      pid1 = Loner.whereis_name(TestSupervisor)
+      pid2 = :rpc.call(n4, Loner, :whereis_name, [TestSupervisor])
+
+      IO.inspect "HERE2"
+      assert is_pid(pid1)
+      assert is_pid(pid2)
+      assert pid1 != pid2
+
+      [rs1] = find_registered_servers(g1)
+      [rs2] = find_registered_servers(g2)
+
+      assert rs1 != rs2
+    end
+  end
+
   defp restart_until_remote(pid) do
     if :erlang.node(pid) == node() do
       Process.exit(pid, :kill)
       assert_eventually(pid != Loner.whereis_name(TestServer))
-      assert_eventually(:undefined != Loner.whereis_name(TestServer))
+      assert_eventually(nil != Loner.whereis_name(TestServer))
       new_pid = Loner.whereis_name(TestServer)
       restart_until_remote(new_pid)
     else
       pid
     end
   end
+
+  defp find_registered_servers(nodes) do
+    nodes
+    |> :rpc.multicall(Proces, :whereis, [RegisteredServer])
+    |> elem(0)
+    |> Enum.filter(&is_pid/1)
+  end
+
 end

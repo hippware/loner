@@ -42,7 +42,8 @@ defmodule Loner.MixProject do
 
   defp deps do
     [
-      {:horde, "~> 0.7"},
+      # {:horde, "~> 0.7"},
+      {:horde, path: "/home/bernard/src/horde"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:credo_naming, "~> 0.3", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.7", only: :dev, runtime: false},
@@ -56,7 +57,9 @@ defmodule Loner.MixProject do
        github: "hippware/local-cluster",
        branch: "fix-remote-log-level",
        only: :test,
-       runtime: false}
+       runtime: false},
+      {:rexbug, ">= 1.0.0", runtime: false},
+      {:schism, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 
