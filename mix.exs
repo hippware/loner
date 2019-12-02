@@ -42,7 +42,7 @@ defmodule Loner.MixProject do
 
   defp deps do
     [
-      # {:horde, "~> 0.7"},
+      #{:horde, "~> 0.7"},
       {:horde, path: "/home/bernard/src/horde"},
       {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
       {:credo_naming, "~> 0.3", only: [:dev, :test], runtime: false},

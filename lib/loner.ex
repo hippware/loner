@@ -60,10 +60,11 @@ defmodule Loner do
   defp start_supervisor(child_spec) do
     with {:ok, pid} <-
            Horde.DynamicSupervisor.start_child(@supervisor, child_spec),
-      {:ok, _listener_pid} = DynamicSupervisor.start_child(
-        ConflictListenerSupervisor,
-        {ConflictListener, {child_spec.id, pid}}
-      ) do
+         {:ok, _listener_pid} =
+           DynamicSupervisor.start_child(
+             ConflictListenerSupervisor,
+             {ConflictListener, {child_spec.id, pid}}
+           ) do
       {:ok, pid}
     end
   end
